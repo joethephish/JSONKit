@@ -679,7 +679,7 @@ static JKArray *_JKArrayCreate(id *objects, NSUInteger count, BOOL mutableCollec
   NSCParameterAssert((objects != NULL) && (_JKArrayClass != NULL) && (_JKArrayInstanceSize > 0UL));
   JKArray *array = NULL;
   if(JK_EXPECT_T((array = (JKArray *)calloc(1UL, _JKArrayInstanceSize)) != NULL)) { // Directly allocate the JKArray instance via calloc.
-    array->isa      = _JKArrayClass;
+    object_setClass(array, _JKArrayClass);
     if((array = [array init]) == NULL) { return(NULL); }
     array->capacity = count;
     array->count    = count;
@@ -928,7 +928,7 @@ static JKDictionary *_JKDictionaryCreate(id *keys, NSUInteger *keyHashes, id *ob
   NSCParameterAssert((keys != NULL) && (keyHashes != NULL) && (objects != NULL) && (_JKDictionaryClass != NULL) && (_JKDictionaryInstanceSize > 0UL));
   JKDictionary *dictionary = NULL;
   if(JK_EXPECT_T((dictionary = (JKDictionary *)calloc(1UL, _JKDictionaryInstanceSize)) != NULL)) { // Directly allocate the JKDictionary instance via calloc.
-    dictionary->isa      = _JKDictionaryClass;
+    object_setClass(dictionary, _JKDictionaryClass);
     if((dictionary = [dictionary init]) == NULL) { return(NULL); }
     dictionary->capacity = _JKDictionaryCapacityForCount(count);
     dictionary->count    = 0UL;
@@ -2595,6 +2595,10 @@ static int jk_encode_add_atom_to_buffer(JKEncodeState *encodeState, void *object
   // XXX XXX XXX XXX
 
   BOOL workAroundMacOSXABIBreakingBug = NO;
+    
+// JH 29/10/13 - Ignore warning
+#pragma GCC diagnostic ignored "-Wdeprecated-objc-pointer-introspection"
+    
   if(JK_EXPECT_F(((NSUInteger)object) & 0x1)) { workAroundMacOSXABIBreakingBug = YES; goto slowClassLookup; }
 
        if(JK_EXPECT_T(object_getClass(object) == encodeState->fastClassLookup.stringClass))     { isClass = JKClassString;     }
